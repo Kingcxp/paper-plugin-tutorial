@@ -92,10 +92,51 @@ style: |
 
 ![](./assets/minecraft-plugin-history.png)
 
+---
+
+### Paper 服务端是从哪来的？
+
+![](./assets/minecraft-plugin-history.png)
+
+- <info>Vanilla</info>：Mojang 官方原版，无法加载插件。
+
+---
+
+### Paper 服务端是从哪来的？
+
+![](./assets/minecraft-plugin-history.png)
+
+- <info>Vanilla</info>：Mojang 官方原版，无法加载插件。
+- **CraftBukkit**：第一个广泛使用的插件支持
+
+---
+
+### Paper 服务端是从哪来的？
+
+![](./assets/minecraft-plugin-history.png)
+
+- <info>Vanilla</info>：Mojang 官方原版，无法加载插件。
+- **CraftBukkit**：第一个广泛使用的插件支持
+- <success>Spigot</success>：CraftBukkit 的一个分支，提供了更多的 API 和性能优化。
+
+---
+
+### Paper 服务端是从哪来的？
+
+![](./assets/minecraft-plugin-history.png)
+
 - <info>Vanilla</info>：Mojang 官方原版，无法加载插件。
 - **CraftBukkit**：第一个广泛使用的插件支持
 - <success>Spigot</success>：CraftBukkit 的一个分支，提供了更多的 API 和性能优化。
 - <danger>Paper</danger>：Spigot 的一个分支，在 API 支持和性能上更进一步。
+
+---
+
+### **插件**相较于<danger>模组</danger>和<success>数据包</success>？
+
+- #### 为什么选择**插件**？
+
+插件结合了两者对 Minecraft 游戏世界的修改能力，同时将两者拥有的一些缺陷进行了**弥补和隐藏**：
 
 ---
 
@@ -115,12 +156,52 @@ style: |
 
 ## 📁 数据包 (Datapack)
 
+---
+
+## 📁 数据包 (Datapack)
+
+- **编写难度**：<warning>入门极易，精通极其折磨</warning>
+  基于 JSON 和原版命令 (mcfunction)。修改合成表、战利品极快。但若要实现复杂的逻辑（如循环、复杂的数学运算），只能依靠记分板和实体，逻辑链路极难维护。
+
+---
+
+## 📁 数据包 (Datapack)
+
+- **编写难度**：<warning>入门极易，精通极其折磨</warning>
+  基于 JSON 和原版命令 (mcfunction)。修改合成表、战利品极快。但若要实现复杂的逻辑（如循环、复杂的数学运算），只能依靠记分板和实体，逻辑链路极难维护。
+- **安装难度**：<success>完全零门槛（玩家无感）</success>
+  纯粹依托于游戏存档/服务端。玩家使用完全纯净的原版客户端即可加入，无需任何额外操作。
+
+---
+
+## 📁 数据包 (Datapack)
+
 - **编写难度**：<warning>入门极易，精通极其折磨</warning>
   基于 JSON 和原版命令 (mcfunction)。修改合成表、战利品极快。但若要实现复杂的逻辑（如循环、复杂的数学运算），只能依靠记分板和实体，逻辑链路极难维护。
 - **安装难度**：<success>完全零门槛（玩家无感）</success>
   纯粹依托于游戏存档/服务端。玩家使用完全纯净的原版客户端即可加入，无需任何额外操作。
 - **使用效果**：<danger>局限性强，性能上限低</danger>
   被死死限制在原版命令允许的框架内。无法连接数据库，无法实现多线程处理，高频复杂的命令运行会严重拖垮服务器计算资源 (TPS)。
+
+---
+
+## 🧩 模组 (Mod - Forge/Fabric/NeoForge)
+
+---
+
+## 🧩 模组 (Mod - Forge/Fabric/NeoForge)
+
+- **编写难度**：<danger>地狱级 (极陡峭的学习曲线)</danger>
+  需要深厚的 Java 功底，掌握 Mixin 字节码注入，并且需要大致理解晦涩的 Minecraft 底层源码（NMS）。
+
+---
+
+## 🧩 模组 (Mod - Forge/Fabric/NeoForge)
+
+- **编写难度**：<danger>地狱级 (极陡峭的学习曲线)</danger>
+  需要深厚的 Java 功底，掌握 Mixin 字节码注入，并且需要大致理解晦涩的 Minecraft 底层源码（NMS）。
+- **安装难度**：<danger>门槛较高</danger>
+  玩家必须在自己的电脑上安装对应的加载器，并将几十上百个 Mod 文件精确放入客户端文件夹，版本稍微不匹配就会崩溃报错。当然也可以选择整合包一键安装，但这仍然需要一定的操作门槛。
 
 ---
 
@@ -137,12 +218,49 @@ style: |
 
 ## 🔌 服务器插件 (Plugin)
 
+---
+
+## 🔌 服务器插件 (Plugin)
+
+- **编写难度**：<info>中等偏上 (需要 Java 基础与 API 知识)</info>
+  基于高度封装的 Paper/Spigot API，拥有现代编程语言完整的面向对象体验和庞大的开源生态，遇到问题很容易查到现成代码。
+
+---
+
+## 🔌 服务器插件 (Plugin)
+
+- **编写难度**：<info>中等偏上 (需要 Java 基础与 API 知识)</info>
+  基于高度封装的 Paper/Spigot API，拥有现代编程语言完整的面向对象体验和庞大的开源生态，遇到问题很容易查到现成代码。
+- **安装难度**：<success>完全零门槛（玩家无感）</success>
+  纯服务端运行，玩家依然使用原版客户端直连。除了需要在服务端安装对应插件以外，无需任何额外操作。这只会对腐竹产生一些麻烦。
+
+---
+
+## 🔌 服务器插件 (Plugin)
+
 - **编写难度**：<info>中等偏上 (需要 Java 基础与 API 知识)</info>
   基于高度封装的 Paper/Spigot API，拥有现代编程语言完整的面向对象体验和庞大的开源生态，遇到问题很容易查到现成代码。
 - **安装难度**：<success>完全零门槛（玩家无感）</success>
   纯服务端运行，玩家依然使用原版客户端直连。除了需要在服务端安装对应插件以外，无需任何额外操作。这只会对腐竹产生一些麻烦。
 - **使用效果**：<success>逻辑控制极强</success>
   可以连接 Redis/MySQL，彻底掌控服务器逻辑。唯一遗憾是 **不能“无中生有”**：无法给客户端注入全新的非原版 3D 渲染模型、按键绑定或全新机制的方块。
+
+---
+
+## 💪 为什么要选择服务器插件？
+
+---
+
+## 💪 为什么要选择服务器插件？
+
+- **开发难度适中**：不需要掌握复杂的底层技术，只需要掌握 Java 编程语言和 Paper/Spigot API 即可，而 API 这块根本不必担心，因为有详尽的[文档](https://jd.papermc.io/paper/26.1.2/)。
+
+---
+
+## 💪 为什么要选择服务器插件？
+
+- **开发难度适中**：不需要掌握复杂的底层技术，只需要掌握 Java 编程语言和 Paper/Spigot API 即可，而 API 这块根本不必担心，因为有详尽的[文档](https://jd.papermc.io/paper/26.1.2/)。
+- **用户友好**：玩家根本就不需要操心插件的事情，只要是原版客户端，就能无缝加入服务器。~~*只是需要可怜一下腐竹*~~
 
 ---
 
