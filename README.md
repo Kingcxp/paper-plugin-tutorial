@@ -5,7 +5,6 @@ size: 16:9
 math: katex
 backgroundColor: #141414
 color: #E5EAF3
-footer: Kingcq @ 2026
 style: |
   p {
     margin: 16px;
@@ -186,7 +185,7 @@ style: |
 
 Tick 是 Minecraft 游戏世界的“心跳”，每秒执行 20 次。
 
-在一个 tick 中，服务器会处理所有的事件，并更新所有实体的状态：
+在一个 tick 中，服务器会处理所有的事件，并更新整个世界的状态：
 
 - <success>处理玩家行为</success>
 - <success>实体与 AI 演算</success>
@@ -195,4 +194,69 @@ Tick 是 Minecraft 游戏世界的“心跳”，每秒执行 20 次。
 
 如果在这个 <danger>50ms</danger> 的时间窗口内不能完成所有任务，那么服务器就会卡住，表现为 **TPS 下降，玩家操作卡顿**。
 
+---
 
+<!-- _class: title-page -->
+
+# Paper 插件开发 - 创建插件
+
+---
+
+### 📦 安装开发环境
+
+要想顺利开发 Paper 插件，我们必须要一个合适的开发环境：
+
+- 我们先要一个[足够强力的 IDE](https://lp.jetbrains.com/intellij-idea-promo/?msclkid=fcc138a0ef46179150cb52a5398cad60&utm_source=bing&utm_medium=cpc&utm_campaign=APAC_en_JP_IDEA_Branded&utm_term=intellij%20IDEA&utm_content=intellij%20idea)（IntelliJ IDEA）
+- 还要一个有力气的 IDE 插件：[**Minecraft Development**](https://plugins.jetbrains.com/plugin/8327-minecraft-development)
+
+![](./assets/minecraft-development.png)
+
+---
+
+### 🍵 创建插件项目
+
+- 选择新建项目，在生成器中找到 Minecraft，填写必要的信息后就可以成功创建一个 Paper 服务器插件项目了，有两个要注意的点：
+  - [Java 包名规范](https://www.cnblogs.com/JavaWebStudyhcz/articles/18969795)
+  - [使用魔法](https://ikuuu.win)
+
+其它的注意点不用考虑，因为 IDEA 和 Minecraft Development 插件已经帮你做好了所有的考量
+
+---
+
+<!-- _class: title-page -->
+
+# Paper 插件开发 - 插件和生命周期
+
+---
+
+### 🔌 插件主类
+
+当插件项目自动创建完之后，我们就会看到对应的初始代码：
+
+```java
+public final class TestPlugin extends JavaPlugin {
+
+    @Override
+    public void onEnable() {
+        // Plugin startup logic
+    }
+
+    @Override
+    public void onDisable() {
+        // Plugin shutdown logic
+    }
+}
+```
+这是插件的核心，所有的插件逻辑都会围绕这个类展开。
+
+---
+
+### 📜 插件的生命周期
+
+插件的生命周期准确说分为三个阶段，而第一个阶段一半很少用到：
+
+- `onLoad()` - 在插件被读取，但还未被加载到服务器时调用
+- `onEnable()` - 在插件被加载到服务器时调用
+- `onDisable()` - 在插件被卸载时调用
+
+非常朴实无华的生命周期，但却能够包含整个插件的运作过程。
