@@ -260,3 +260,92 @@ public final class TestPlugin extends JavaPlugin {
 - `onDisable()` - 在插件被卸载时调用
 
 非常朴实无华的生命周期，但却能够包含整个插件的运作过程。
+
+`onLoad()` 生命周期甚至不常用，因为它的作用部分与 `onEnable()` 重叠了
+
+---
+
+<!-- _class: title-page -->
+
+### 示例：在插件的生命周期中向控制台输出一些东西
+
+---
+
+<!-- _class: title-page -->
+
+# Paper 插件开发 - 事件响应
+
+---
+
+### ⚡ 语法拆解：事件响应 (Events)
+
+Bukkit 的事件系统采用了典型的**观察者模式 (Observer Pattern)**，辅以 Java 的**反射机制**。
+
+```java
+public class MyListener implements Listener {
+    @EventHandler
+    public void onPlayerJump(PlayerMoveEvent event) { ... }
+}
+```
+
+- **`implements Listener`**：这是一个**标记接口 (Marker Interface)**（里面没有任何方法）。它的唯一作用是告诉服务器这里面有监听器！
+- **`@EventHandler` 注解**：用这个注解来标记监听器方法。
+- **参数 `(PlayerMoveEvent event)`**：参数类型决定了你要监听什么事件
+
+---
+
+### ✅ 注册事件监听器
+
+光定义事件监听器还不够，我们还得把它们注册到服务器中：
+
+```java
+public final class TestPlugin extends JavaPlugin {
+  @Override
+  public void onEnable() {
+    PluginManager manager = Bukkit.getPluginManager();
+    manager.registerEvents(new ExampleListener(), this);
+
+    // ..
+  }
+}
+```
+
+至此，服务器才明白你注册了一个名为 ExampleListener 的监听器，并会在对应的事件发生时调用内部的对应方法。
+
+---
+
+<!-- _class: title-page -->
+
+### 示例：玩家手持史莱姆块时被攻击免伤并弹飞攻击者
+
+---
+
+### 🤝 进阶技法：动态注册与卸载
+
+默认情况下，我们在 `onEnable` 里注册所有的监听器，在 `plugin.yml` 里写死所有的命令。但这种**静态**方式有两个致命缺陷：
+1. **性能浪费**：假设你写了一个只有每周日开启的插件，那么在其它时间，这个插件其实是不需要运行的，白白损耗了内存和时间。
+2. **缺乏灵活性**：比如想为某个玩家的特定行为注册监听器，或者又不需要这个监听器了，单纯在 `onEnable` 生命周期中注册显然不够灵活。
+
+这个时候，我们需要动态加载/卸载监听器：
+
+---
+
+### ⚡ 动态卸载事件：HandlerList
+
+动态加载事件很简单，我们刚刚的操作实际上可以在代码的任何一个位置进行，那卸载呢？
+
+Bukkit 的事件系统底层是一个叫做 `HandlerList`（处理者列表）的结构。所有的 `@EventHandler` 最终都被装进了这里。
+
+我们前往[文档](https://jd.papermc.io/paper/26.1.2/org/bukkit/event/HandlerList.html)去观察 `HandlerList`
+
+就会发现，这三个方法的定义是我们实际需要的：
+
+```java
+public static void unregisterAll();
+public static void unregisterAll(Listener listener);
+public static void unregisterAll(Plugin plugin);
+```
+
+---
+
+<!-- _class: title-page -->
