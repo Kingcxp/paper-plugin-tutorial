@@ -300,13 +300,13 @@ public class MyListener implements Listener {
 
 ```java
 public final class TestPlugin extends JavaPlugin {
-  @Override
-  public void onEnable() {
-    PluginManager manager = Bukkit.getPluginManager();
-    manager.registerEvents(new ExampleListener(), this);
+    @Override
+    public void onEnable() {
+        PluginManager manager = Bukkit.getPluginManager();
+        manager.registerEvents(new ExampleListener(), this);
 
-    // ..
-  }
+        // ..
+    }
 }
 ```
 
@@ -449,12 +449,12 @@ commands:
 ```java
 @Override
 public void onEnable() {
-  PluginCommand myCommand = this.getCommand("mycommand");
-  MyCommand commandInstance = new MyCommand();
-  if (myCommand != null) {
-    myCommand.setExecutor(commandInstance);
-    myCommand.setTabCompleter(commandInstance);
-  }
+    PluginCommand myCommand = this.getCommand("mycommand");
+    MyCommand commandInstance = new MyCommand();
+    if (myCommand != null) {
+        myCommand.setExecutor(commandInstance);
+        myCommand.setTabCompleter(commandInstance);
+    }
 }
 ```
 
@@ -467,12 +467,12 @@ public void onEnable() {
 `MyCommand.java`
 ```java
 public class MyCommand implements CommandExecutor, TabCompletor {
-  @Override
+    @Override
     public boolean onCommand(
-      @NotNull CommandSender sender,
-      @NotNull Command command,
-      @NotNull String label,
-      @NotNull String @NotNull [] args
+        @NotNull CommandSender sender,
+        @NotNull Command command,
+        @NotNull String label,
+        @NotNull String @NotNull [] args
     ) {
       // onTabComplete 同理…
     }
@@ -494,8 +494,8 @@ public class MyCommand implements BasicCommand
 ```java
 @Override
 public void onEnable() {
-  BasicCommand myCommand = new MyCommand();
-  registerCommand("mycommand", myCommand);
+    BasicCommand myCommand = new MyCommand();
+    registerCommand("mycommand", myCommand);
 }
 ```
 
@@ -510,8 +510,8 @@ public void onEnable() {
 public void execute(CommandSourceStack source, String [] args) { ... }
 // 非必要，根据当前参数列表给出补全提示
 public Collection<String> suggest(
-  CommandSourceStack commandSourceStack,
-  String[] args
+    CommandSourceStack commandSourceStack,
+    String[] args
 ) { ... }
 // 非必要，判断命令发出者是否有权限执行命令
 public boolean canUse(CommandSender sender) { ... }
@@ -577,8 +577,8 @@ Paper 服务器插件的配置文件就推荐使用 `YAML` 格式编写，并提
 ```java
 @Override
 public void onEnable() {
-  File file = new File(getDataFolder(), "myconfig.yml");
-  YamlConfiguration myconfig = YamlConfiguration.loadConfiguration(file);
+    File file = new File(getDataFolder(), "myconfig.yml");
+    YamlConfiguration myconfig = YamlConfiguration.loadConfiguration(file);
 }
 ```
 
@@ -656,3 +656,234 @@ myconfig.set("players.1.age", -1);
 <!-- _class: title-page -->
 
 # <warning>Paper 插件开发</warning> - **物品和容器**
+
+---
+
+### 📦 物品
+
+物品的种类包罗万象：无论是砍树的工具、饱腹的食物、建筑的方块，还是合成的材料，在 Paper 底层，它们都被统一抽象为同一个类：**`ItemStack`**。
+
+一个基础的 `ItemStack` 仅仅包含了“材质 (Material)”和“数量 (Amount)”：
+
+```java
+// 创建一个包含 64 个钻石的基础物品堆
+ItemStack diamonds = new ItemStack(Material.DIAMOND, 64);
+```
+
+但是，要想让物品具有 RPG 属性、特殊的说明或者附魔，我们就需要触及物品的 **“灵魂”** ——`ItemMeta`。
+
+---
+
+### 🪄 赋予物品灵魂：ItemMeta
+
+`ItemMeta` 掌管着物品的显示名称、Lore（物品描述）、附魔等一切视觉和附加数据。
+<danger>⚠️ 核心铁律：你必须先将 Meta“抽离”出来，修改完毕后，再将其“注入”回原物品中！</danger>
+
+```java
+ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
+ItemMeta meta = sword.getItemMeta();
+meta.displayName(
+    Component.text("★ 霜之哀伤 ★", TextColor.fromCSSHexString("#00FFFF"))
+);
+meta.lore(List.of(
+    Component.text("冰封王座的遗产", NamedTextColor.LIGHT_PURPLE),
+    Component.text("攻击力: +999", NamedTextColor.GOLD)
+));
+meta.addEnchant(Enchantment.SHARPNESS, 10, true);
+```
+
+---
+
+### 💪 添加属性词条
+
+如果说，我想给铲子一个<danger>非常高的攻击伤害</danger>，难道说，我要去算锋利附魔要多少级吗？
+当然不用，我们可以直接使用 `AttributeModifier` 来添加自定义属性：
+
+```java
+meta.addAttributeModifier(
+    Attribute.ATTACK_DAMAGE,
+    new AttributeModifier(
+        new NamespacedKey(TestPlugin.plugin, "shovel_attack_damage"),
+        1024d, AttributeModifier.Operation.ADD_NUMBER,
+        EquipmentSlotGroup.MAINHAND
+    )
+);
+```
+
+---
+
+### 💽 进阶：PersistentDataContainer - 持久化数据容器
+
+**痛点**：如果我们做了一把特殊的剑，在玩家攻击时触发闪电。我们该如何在代码里判断这把剑是不是那把“特殊剑”？
+<warning>依赖判断名字（displayName）？绝对不行！玩家可以在铁砧上给普通剑改名来伪造！</warning>
+
+用 `Lore` 是不是可以？如果每种东西的 `Lore` 都不同，那自然是可以的，但这仍然是笨办法，有没有更优美的解法？
+
+有的，兄弟，有的！
+
+---
+
+### 💽 进阶：PersistentDataContainer - 持久化数据容器
+
+**解法**：Paper API 提供了 `PersistentDataContainer`，允许我们在物品内部**隐蔽地存储自定义数据**。
+
+```java
+NamespacedKey key = new NamespacedKey(TestPlugin.plugin, "weapon_id");
+meta.getPersistentDataContainer().set(
+    key,
+    PersistentDataType.STRING,
+    "lightning_sword"
+);
+// 在玩家攻击事件中
+String weaponId = meta
+    .getPersistentDataContainer()
+    .get(key, PersistentDataType.STRING);
+
+if ("lightning_sword".equals(weaponId)) { ... }
+```
+
+---
+
+### 😕 别的属性？
+
+比如说，我想让铁镐可以被吃下去？或者铁剑可以堆叠64个？
+
+```java
+// 变成可食用的食物
+FoodComponent food = meta.getFood();
+food.setCanAlwaysEat(true);
+food.setNutrition(100);
+food.setSaturation(100);
+
+meta.setFood(food);
+
+// 变成可堆叠的物品，最大堆叠只能 99
+meta.setMaxStackSize(64);
+```
+
+更多属性？去查看 [ItemMeta 文档](https://jd.papermc.io/paper/26.1.2/org/bukkit/inventory/meta/ItemMeta.html)！
+
+---
+
+<!-- _class: title-page -->
+
+## 示例：用水瓶创建一个能喝 5 次的治疗药水
+
+---
+
+### 🧰 容器 (Inventory)
+
+容器是用来存放物品的矩阵。在 Minecraft 中，它的作用远不止“储存物品”那么简单，容器扮演着三大核心角色：
+1. **储存空间**：玩家背包、箱子、潜影盒，用于数据的持久化存放。
+2. **制作站**：工作台、熔炉、酿造台，用于规则性的物品转换。
+3. **互动界面 (GUI)**：<success>这是现代服务器插件的绝对核心！</success>通过创建一个不存在于世界上的虚拟箱子，我们能将其作为与玩家进行丰富交互的菜单。
+
+在代码中，容器的尺寸（Size）必须是 **9 的倍数**（例如 9, 18, 27... 最大 54）。
+
+---
+
+### 🖥️ 创建并展示虚拟 GUI 菜单
+
+我们可以随时无中生有地创建一个虚拟容器，并将刚才精心制作的 `ItemStack` 放入其中，最后强行展示给玩家：
+
+```java
+// 1. 创建一个 3行 (27格) 的虚拟容器，拥有者设为 null，标题自定义
+Inventory gui = Bukkit.createInventory(null, 27, Component.text("服务器核心菜单"));
+
+// 2. 槽位计算 (0-26)
+// 第一行是 0~8, 我们把物品放在正中间 (第二行第 4 格，即 13)
+gui.setItem(13, sword);
+
+// 3. 打开界面
+player.openInventory(gui);
+```
+<info>此时，玩家的前端界面会被强行打开，并看到这把剑静静躺在中间。</info>
+
+再配合上事件响应，就可以做响应式界面了！
+
+---
+
+<!-- _class: title-page -->
+
+## 示例：简单的响应式界面
+
+---
+
+<!-- _class: title-page -->
+
+# <warning>Paper 插件开发</warning> - **自定义配方**
+
+---
+
+### 🧪 改变生存法则：配方系统 (Recipes)
+
+在 Paper 插件开发中，我们可以通过代码向服务器动态注入几乎所有的原版配方类型。比较常见的有以下几种：
+
+1. **`ShapedRecipe` (有序合成)**：严格要求物品在工作台 3x3 矩阵中的摆放位置（如合成镐子）。
+2. **`ShapelessRecipe` (无序合成)**：只要工作台里有这些材料，随便怎么摆都能合成（如合成谜之炖菜）。
+3. **`FurnaceRecipe` (熔炉配方)**：将被烧炼物转化为产物（也包括 `BlastingRecipe` 高炉 和 `SmokingRecipe` 烟熏炉）。
+4. **`SmithingTransformRecipe` (锻造配方)**：在锻造台中，通过“模板+基底+附加物”升级物品（如钻石升级下界合金）。
+
+---
+
+### 🔑 核心前提：命名空间键 (NamespacedKey)
+
+在注册任何一个配方之前，你必须为其指定一个**全球唯一的身份证**，这就叫 `NamespacedKey`。
+
+由于现在服务器里可能有几百个插件和数据包，如果大家都叫 `my_sword`，服务器就会崩溃。因此，`NamespacedKey` 是由 **“插件名(或命名空间)”** 和 **“配方名”** 两部分组成的。
+
+```java
+// 生成一个当前插件专属的 Key： "testplugin:magic_saddle"
+NamespacedKey recipeKey = new NamespacedKey(plugin, "magic_saddle");
+```
+
+<info>如果有一天你需要取消这个合成配方，也是通过向服务器提供这个 Key 来进行注销（`Bukkit.removeRecipe(recipeKey)`）。</info>
+
+---
+
+### 🧰 语法拆解：创建有序合成 (ShapedRecipe)
+
+```java
+NamespacedKey key = new NamespacedKey(plugin, "custom_boots");
+// 假定这个物品有一些特殊数据
+ItemStack result = new ItemStack(Material.IRON_BOOTS);
+ShapedRecipe recipe = new ShapedRecipe(key, result);
+
+recipe.shape(
+    "   ",
+    "F F",
+    "I I"
+);
+
+recipe.setIngredient('L', Material.FEATHER);
+recipe.setIngredient('I', Material.IRON_INGOT);
+
+Bukkit.addRecipe(recipe);
+```
+
+---
+
+### 🔥 语法拆解：创建熔炉配方 (FurnaceRecipe)
+
+熔炉配方的注册更加简单直接。你只需要告诉服务器：输入什么、输出什么、给多少经验、需要烧多久？
+
+```java
+NamespacedKey key = new NamespacedKey(plugin, "flesh_to_leather");
+
+FurnaceRecipe recipe = new FurnaceRecipe(
+    key,
+    new ItemStack(Material.LEATHER), // 产物：皮革
+    Material.ROTTEN_FLESH,           // 原料：腐肉
+    1.0f,                            // 经验奖励：1.0点
+    200                              // 烧炼时间：200 Tick (10秒)
+);
+
+Bukkit.addRecipe(recipe);
+```
+<success>经典的腐肉烧皮革</success>
+
+---
+
+<!-- _class: title-page -->
+
+## 示例：实现“腐肉烧皮革”功能
