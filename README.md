@@ -198,7 +198,7 @@ Tick 是 Minecraft 游戏世界的“心跳”，每秒执行 20 次。
 
 <!-- _class: title-page -->
 
-# Paper 插件开发 - 创建插件
+# <warning>Paper 插件开发</warning> - **创建插件**
 
 ---
 
@@ -225,7 +225,7 @@ Tick 是 Minecraft 游戏世界的“心跳”，每秒执行 20 次。
 
 <!-- _class: title-page -->
 
-# Paper 插件开发 - 插件和生命周期
+# <warning>Paper 插件开发</warning> - **插件和生命周期**
 
 ---
 
@@ -273,7 +273,7 @@ public final class TestPlugin extends JavaPlugin {
 
 <!-- _class: title-page -->
 
-# Paper 插件开发 - 事件响应
+# <warning>Paper 插件开发</warning> - **事件响应**
 
 ---
 
@@ -356,7 +356,7 @@ public static void unregisterAll(Plugin plugin);
 
 <!-- _class: title-page -->
 
-# Paper 插件开发 - BukkitRunnable
+# <warning>Paper 插件开发</warning> - **BukkitRunnable**
 
 ---
 
@@ -421,8 +421,238 @@ task.runTaskTimer(Plugin plugin, long delay, long period);
 
 <!-- _class: title-page -->
 
-# Paper 插件开发 - 命令
+# <warning>Paper 插件开发</warning> - **命令**
 
 ---
 
+### 🪣 Bukkit 中的命令接口
 
+在 `CraftBukkit` 指定的插件加载接口实际非常生硬，它需要你在两个地方注册命令：
+
+`plugin.yaml`
+```yaml
+# ...
+commands:
+  mycommand:
+    description: "My command"
+    usage: "/mycommand"
+    permission: "me.kingcq.testplugin.mycommand"
+```
+
+---
+
+### 🪣 Bukkit 中的命令接口
+
+在 `CraftBukkit` 指定的插件加载接口实际非常生硬，它需要你在两个地方注册命令：
+
+`TestPlugin.java`
+```java
+@Override
+public void onEnable() {
+  PluginCommand myCommand = this.getCommand("mycommand");
+  MyCommand commandInstance = new MyCommand();
+  if (myCommand != null) {
+    myCommand.setExecutor(commandInstance);
+    myCommand.setTabCompleter(commandInstance);
+  }
+}
+```
+
+---
+
+### 🪣 Bukkit 中的命令接口
+
+此外，你还需要在 `MyCommand.java` 中实现 `CommandExecutor` 和 `TabCompleter` 接口：
+
+`MyCommand.java`
+```java
+public class MyCommand implements CommandExecutor, TabCompletor {
+  @Override
+    public boolean onCommand(
+      @NotNull CommandSender sender,
+      @NotNull Command command,
+      @NotNull String label,
+      @NotNull String @NotNull [] args
+    ) {
+      // onTabComplete 同理…
+    }
+}
+```
+
+---
+
+### 📜 Paper 的命令接口重写
+
+根据[文档](https://docs.papermc.io/paper/dev/command-api/misc/basic-command/)，在 Paper 中，我们可以继承 `SimpleCommand` 接口并重写对应方法：
+
+```java
+public class MyCommand implements BasicCommand
+```
+
+之后，只需要在 `onEnable()` 生命周期中注册这个命令：
+
+```java
+@Override
+public void onEnable() {
+  BasicCommand myCommand = new MyCommand();
+  registerCommand("mycommand", myCommand);
+}
+```
+
+---
+
+### 🔌 需要覆写的接口方法
+
+为了编写一个功能完整的命令，你需要重载这几个方法：
+
+```java
+// 必要，决定命令如何运行
+public void execute(CommandSourceStack source, String [] args) { ... }
+// 非必要，根据当前参数列表给出补全提示
+public Collection<String> suggest(
+  CommandSourceStack commandSourceStack,
+  String[] args
+) { ... }
+// 非必要，判断命令发出者是否有权限执行命令
+public boolean canUse(CommandSender sender) { ... }
+// 非必要，与 `canUse` 互斥，指定命令所需权限
+public @Nullable String permission() { ... }
+```
+
+---
+
+### ⚡ 更简单的命令写法
+
+如果你注意观察，你会发现只有一个方法是必要的
+
+因此，对于一些简单的命令，可以使用更简单的写法：
+
+```java
+registerCommand(
+    "quickcmd",
+    (source, args) -> source.getSender().sendRichMessage("<yellow>Hello!")
+);
+```
+
+通过一个 `Lambda` 表达式，我们通过定义一个方法来快速创建一个简单命令，而跳过定义一个类来诠释这个命令的全过程
+
+---
+
+<!-- _class: title-page -->
+
+## 示例：使用 /rocket 命令也能触发烈焰棒效果
+
+---
+
+<!-- _class: title-page -->
+
+# <warning>Paper 插件开发</warning> - **配置文件的加载/保存**
+
+---
+
+### 📚 Yaml
+
+`YAML` 是一种类似 `JSON` 的结构化数据格式，可以表示多层次多类型的复杂结构化数据：
+
+```yaml
+players:
+  -
+    name: "kingcq"
+    age: 22
+    tags: ["student", "developer"]
+    op: true
+  -
+    name: "stridebeach",
+    age: 21
+    tags: ["strange", "hyw"]
+    op: false
+```
+
+---
+
+### 📃 配置文件
+
+Paper 服务器插件的配置文件就推荐使用 `YAML` 格式编写，并提供了丰富的[语法支持](https://jd.papermc.io/paper/26.1.2/org/bukkit/configuration/file/YamlConfiguration.html)：
+
+```java
+@Override
+public void onEnable() {
+  File file = new File(getDataFolder(), "myconfig.yml");
+  YamlConfiguration myconfig = YamlConfiguration.loadConfiguration(file);
+}
+```
+
+而想要获取到配置文件中的内容，比如说我要获得 `players` 中第一个人的 `name`，只需要：
+
+```java
+String name = myconfig.getString("players.0.name");
+```
+
+---
+
+### 📃 配置文件的读取
+
+`YamlConfiguration` 提供了[充足的接口](https://jd.papermc.io/paper/26.1.2/org/bukkit/configuration/MemorySection.html)用来获取配置文件中的数据。
+
+而对于其中的 `path` 参数，想必你也能猜到，它实际上是一个 `String` 类型的路径，用来指定配置文件中的具体位置：
+
+```java
+String name = myconfig.getString("players.0.name");
+String age = myconfig.getString("players.0.age");
+List<String> tags = myconfig.getStringList("players.0.tags");
+boolean op = myconfig.getBoolean("players.0.op");
+```
+
+特别地，你可以使用 `getConfigSection()` 来继续拆分 `YAML` 文件：
+
+```java
+ConfigurationSection section = myconfig.getConfigurationSection("players.0");
+section.getString("name");
+```
+
+---
+
+### 📃 配置文件的保存
+
+`YamlConfiguration` 提供了 `save()` 方法来保存配置文件：
+
+```java
+myconfig.save(new File(getDataFolder(), "myconfig.yml"));
+```
+
+那对于其中具体的数据，如何修改呢？
+
+YamlConfiguration 提供了 `set()` 方法，可以将指定的 `path` 字段的内容修改为任何支持的类型：
+
+```java
+myconfig.set("players.0.name", "aintcecily");
+myconfig.set("players.1.age", -1);
+```
+
+特别地，如果后面要设置的值为 `null`，这条字段会直接被删除。
+
+---
+
+### ⚠️ 性能陷阱：主线程与磁盘 I/O
+
+你应当也注意到了，读写配置文件一定是对**整个文件**进行操作，在配置文件比较大的情况下，这意味着<danger>大量的磁盘读写开销</danger>。
+
+因此，为了尽可能避免大量的开销，我们最好只在 `onEnable` 和 `onDisable` 生命周期中读取和保存配置文件。
+
+当然，你也可以选择 `懒加载` 的思路，当需要配置文件的时候再去加载，但 <warning>在整个插件生命周期中只加载一次</warning>。
+
+> 担心服务器被强制 kill 了，配置文件没来得及保存？
+
+~~*除了定时保存配置文件以外，这种情况确实没招，受着*~~
+
+---
+
+<!-- _class: title-page -->
+
+## 示例：支持在配置文件中调整上升速度和时长
+
+---
+
+<!-- _class: title-page -->
+
+# <warning>Paper 插件开发</warning> - **物品和容器**
