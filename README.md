@@ -360,4 +360,69 @@ public static void unregisterAll(Plugin plugin);
 
 ---
 
+### 🚀 持续生效的效果
+
+在插件开发中，我们经常需要实现一些**持续生效**的效果，比如<warning>坐上火箭，在一段时间内持续向上飞行</warning>
+
+这种长时间的效果显然超出了一个 tick 可以完成的限度，而直接在事件响应中进行阻塞式的行为会直接导致 TPS 爆炸。
+
+因此，我们需要将这个响应的维度从一个 tick 扩展到<success>多个 tick</success>：
+
+```java
+BukkitRunnable task = new BukkitRunnable() {
+    @Override
+    public void run() {
+        // Run anything
+    }
+};
+```
+
+---
+
+### 🚀 持续生效的效果
+
+```java
+BukkitRunnable task = new BukkitRunnable() {
+    @Override
+    public void run() {
+        // Run anything
+    }
+};
+```
+像这样就能创建一个简单的 `BukkitRunnable` 实例，其中的 `run` 方法会在你指定的每个 tick 中执行。
+
+这相当于定义了一个继承 `BukkitRunnable` 的类，这意味着你可以在其中指定变量并在运行过程中记录状态。
+
+---
+
+### 🚀 持续生效的效果
+
+具体运行 `BukkitRunnable` 有如下几种方法：
+
+```java
+task.runTask(Plugin plugin);
+task.runTaskLater(Plugin plugin, long delay);
+task.runTaskTimer(Plugin plugin, long delay, long period);
+```
+
+- `runTask`: 直接在下一个 tick 中运行
+- `runTaskLater`: 指定的 delay 后运行
+- `runTaskTimer`: 指定的 delay 后开始运行，然后每隔 period 运行一次
+
+<warning>如果中途遇到了需要紧急停止的情况，也可以在 `run` 方法中使用 `cancel` 直接取消定时任务</warning>
+
+---
+
+<!-- _class: title-page -->
+
+### 示例：右键使用烈焰棒，玩家会在5秒内持续向上冲刺
+
+---
+
+<!-- _class: title-page -->
+
+# Paper 插件开发 - 命令
+
+---
+
 
