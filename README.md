@@ -887,3 +887,120 @@ Bukkit.addRecipe(recipe);
 <!-- _class: title-page -->
 
 ## 示例：实现“腐肉烧皮革”功能
+
+---
+
+<!-- _class: title-page -->
+
+# <warning>Paper 插件开发</warning> - **自定义物品**
+
+---
+
+### 🖥️ 告别刷屏：现代化的 UI 视觉反馈
+
+Paper 借助 **Adventure API** 提供了极其优雅的原生 UI 控制：
+
+| UI 类型 | 适用场景与特性 |
+| :--- | :--- |
+| **ActionBar** | 位于快捷栏上方。适合高频刷新的短信息，不遮挡视野。 |
+| **BossBar** | 位于屏幕正上方，带进度条。适合展示全局或小队状态。|
+| **Title** | 占据屏幕正中央。适合极其重要的强提醒 |
+
+---
+
+### ⚡ 语法拆解：ActionBar 与 BossBar
+
+- **发送高频动作条 (ActionBar)：**
+```java
+player.sendActionBar(Component.text("§b法力值: [||||||||  ] 80/100"));
+```
+
+- **创建并展示 BossBar：**
+```java
+// 创建一个红色、进度为 50%、分成 10 截的 BossBar
+BossBar captureBar = BossBar.bossBar(
+    Component.text("A 点占领中..."),
+    0.5f, BossBar.Color.RED,
+    BossBar.Overlay.NOTCHED_10
+);
+player.showBossBar(captureBar);
+```
+
+---
+
+### 📊 Scoreboard (计分板)
+
+Scoreboard 是 Minecraft 中最强大的数据与团队管理系统。它的首要功能是展示右侧的**信息栏 (Sidebar)**。
+
+```java
+ScoreboardManager manager = Bukkit.getScoreboardManager();
+Scoreboard board = manager.getNewScoreboard();
+Objective obj = board.registerNewObjective(
+    "game_stats",
+    "dummy",
+    Component.text("★ 战区数据 ★")
+);
+obj.setDisplaySlot(DisplaySlot.SIDEBAR); // 显示在屏幕右侧
+obj.getScore("当前击杀:").setScore(5);
+obj.getScore("剩余存活:").setScore(12);
+player.setScoreboard(board);
+```
+
+---
+
+### ⚔️ Team (队伍系统)
+
+计分板不仅仅能显示侧边栏，它里面还包含着一个极其强大的子系统：**队伍 (Team)**。
+
+```java
+// 在刚才的 board 中注册一个“红队”
+Team redTeam = board.registerNewTeam("Red");
+
+// 设置队伍前缀与颜色
+redTeam.prefix(Component.text("[红队] ", NamedTextColor.RED));
+redTeam.color(NamedTextColor.RED);
+
+// 开启队伍友伤豁免
+redTeam.setAllowFriendlyFire(false);
+
+// 将玩家加入红队 (注意参数传的是玩家的名字字符串)
+redTeam.addEntry(player.getName());
+```
+
+---
+
+### 🥷 隐身与发光：修改玩家的头顶名字
+
+队伍系统掌管着玩家**头顶名字 (NameTag)** 的渲染规则。掌握它，你就能做出硬核的潜行游戏。
+
+**需求 1：隐藏头顶名字**
+```java
+redTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+```
+
+**需求 2：透视发光描边**
+```java
+// 只要刚才设置了 redTeam.color(NamedTextColor.RED);
+// 当我们赋予玩家发光属性时，客户端渲染出来的轮廓线就会变成红色
+player.setGlowing(true);
+```
+
+---
+
+<!-- _class: title-page -->
+
+# <warning>Paper 插件开发</warning> - **世界生成**
+
+---
+
+### 🗺️ 拆解造物引擎：Chunk 生成管线
+
+哪怕是原版的 Minecraft，生成一个 Chunk（16x16x384的区块）也要经历极其严密且复杂的流水线加工。在 Bukkit API 的 ChunkGenerator 中，这条流水线被完美地暴露给了我们：
+
+![](./assets/chunk-generation.png)
+
+我们可以选择性的调整其中的任何一个步骤来影响世界生成。
+
+---
+
+### 
