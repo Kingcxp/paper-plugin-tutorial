@@ -1003,4 +1003,130 @@ player.setGlowing(true);
 
 ---
 
-### 
+### 🌏 注册生成器
+
+为了让服务器知道我们的插件有生成器，以及如何获取它，我们可以在 Plugin 主类中重写 `getDefaultWorldGenerator()` 方法：
+
+```java
+@Override
+public ChunkGenerator getDefaultWorldGenerator(String worldName, String id) {
+    return new MyCustomGenerator();
+}
+```
+
+同时，根据 [Bukkit 配置文档](https://docs.papermc.io/paper/reference/bukkit-configuration/)，我们需要在 `bukkit.yml` 中指定接管世界生成的插件，使用插件配置中的 `name` 来定位插件：
+
+```yaml
+worlds:
+  world:
+    generator: TestPlugin
+```
+
+---
+
+### 🌏 动态生成世界
+
+如果你不想破坏原版主世界，而是想利用代码 **“凭空创造一个全新的副世界或游戏房间”**，可以使用 Bukkit 提供的 `WorldCreator API`：
+
+```java
+WorldCreator creator = new WorldCreator("alien_dimension");
+
+creator.generator(new MyCustomGenerator());
+creator.generateStructures(false);
+
+World alienWorld = Bukkit.createWorld(creator);
+```
+
+---
+
+### ❌ 删除世界？
+
+直接删除世界显然是不可取的，因为<warning>世界正在被服务器占用</warning>！
+
+要彻底抹除一个世界，我们必须执行严密的**两步销毁**：
+1. **清场与内存卸载 (Unload)**：斩断服务器对该世界的一切资源引用。
+2. **物理毁灭 (File I/O)**：利用 Java 底层文件操作，擦除硬盘痕迹。
+
+核心方法是 `Bukkit.unloadWorld()`，不过请注意[文档](https://jd.papermc.io/paper/26.1.2/org/bukkit/Bukkit.html#unloadWorld(java.lang.String,boolean))：
+
+文档中提示我们不能在世界正在 tick 的情况下卸载它：
+
+---
+
+### 😲 我草，那咋办？
+
+“一个 Tick”并不等同于“世界正在 Tick”。Minecraft 服务端在一个 50ms 的 Tick 生命周期里，是严格分阶段（Phases）执行的：
+
+1. 📥 **网络封包处理阶段**
+2. ⚙️ **Bukkit 调度器任务执行阶段 (`runTask`) 👈 <info>我们的代码在这里！</info>**
+3. 🌍 **世界 Tick 阶段 (`isTickingWorlds = true`) 👈 <danger>事件在这里触发！</danger>**
+4. 📤 **数据同步与发包阶段**
+
+所以，目标其实很简单，我们使用一个 `BukkitRunnable` 来包装一下就可以了。
+
+---
+
+### ❌ 删除世界？
+
+```java
+World toDelete = Bukkit.getWorld("nether");
+    if (toDelete != null) {
+        BukkitRunnable task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Player player : toDelete.getPlayers()) {
+                    player.teleport(player.getRespawnLocation());
+                }
+                for (Chunk chunk : toDelete.getLoadedChunks()) {
+                    chunk.unload(false);
+                }
+                Bukkit.unloadWorld(toDelete, false);
+            }
+        };
+        task.runTask(TestPlugin.plugin);
+    }
+}
+```
+
+---
+
+### ❌ 删除世界？
+
+然后从物理层面删除世界，别忘了留足 unload 世界的耗时：
+
+```java
+BukkitRunnable deleteTask = new BukkitRunnable() {
+    @Override
+    public void run() {
+        File worldFolder = new File(
+            Bukkit.getWorldContainer(), toDelete.getName()
+        );
+        deleteWorldFolder(worldFolder);
+    }
+};
+deleteTask.runTaskLater(this, 2L);
+```
+
+---
+
+### ❌ 删除世界？
+
+至于 `deleteWorldFolder`，顺手的事：
+
+```java
+public void deleteWorldFolder(@NotNull File path) {
+    if (path.exists()) {
+        File[] files = path.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteWorldFolder(file);
+                } else {
+                    file.delete();
+                }
+            }
+        }
+        path.delete();
+    }
+}
+```
