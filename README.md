@@ -1285,3 +1285,61 @@ try {
     plugin.getLogger().severe("无法加载结构文件！");
 }
 ```
+
+---
+
+<!-- _class: title-page -->
+
+# 🎨 突破次元壁：客户端视觉掌控
+### 动态材质包与字符串模型数据 (1.21.4+)
+
+---
+
+## 🚧 自定义物品贴图
+
+<danger>无论你的 Java 代码写得多么逆天，纯粹的服务端插件是绝对不可能凭空把一张全新的 `.png` 物品贴图塞进玩家客户端内存里的！</danger>
+
+Minecraft 是 C/S（客户端/服务端）架构。服务器只能告诉客户端：“玩家手里拿的是一根木棍 (Stick)”。至于这根木棍长什么样，完全由客户端本地的文件决定。
+
+**✨ 破局之法：**
+让服务器向玩家发送一个 **资源包 (Resource Pack)** 的下载链接。客户端下载后，就会用包里的新图片来渲染游戏画面！
+
+---
+
+## 🏷️ CustomModelData
+
+在 **Paper 1.21.4+** 引入了数据组件之后，我们终于可以在 `CustomModelData` 中使用**语义化的字符串**了！
+
+```java
+ItemStack magicWand = new ItemStack(Material.STICK);
+ItemMeta meta = magicWand.getItemMeta();
+meta.displayName(Component.text("★ 魔法法杖 ★"));
+
+CustomModelDataComponent cmd = meta.getCustomModelDataComponent();
+
+cmd.setStrings(List.of("test_plugin:magic_wand"));
+
+meta.setCustomModelDataComponent(cmd);
+magicWand.setItemMeta(meta);
+```
+
+---
+
+## 📁 材质包基础：骨架与灵魂
+
+材质包本质上是一个具有严格目录结构的 `.zip` 压缩包。
+首先，我们需要在根目录建立 `pack.mcmeta`（材质包的身份证）：
+下面这段 JSON 是万能的，可以适用于任何版本的材质包，但考虑到之后用到的语法比较新，Minecraft 版本最好还是在 `1.21.4+` 为好。
+
+```json
+{
+  "pack": {
+    "description": "Auto-generated resource pack for TestPlugin",
+    "pack_format": 9999,
+    "supported_formats": [0, 9999],
+    "min_format": 0,
+    "max_format": 9999
+  }
+}
+
+```
