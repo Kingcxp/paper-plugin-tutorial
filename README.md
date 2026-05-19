@@ -985,6 +985,8 @@ redTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
 player.setGlowing(true);
 ```
 
+<!-- TODO: 进阶部分 -->
+
 ---
 
 <!-- _class: title-page -->
@@ -1128,5 +1130,158 @@ public void deleteWorldFolder(@NotNull File path) {
         }
         path.delete();
     }
+}
+```
+
+---
+
+### 🌡️ 第一步：群系分布 (BiomeProvider)
+
+**一切的前提是群系。** 它是冷还是热？是沙漠还是平原？这决定了后续表皮铺什么方块、下不下雪。
+
+在 `ChunkGenerator` 中重写对应方法，根据信息返回群系：
+
+```java
+public class MyBiomeProvider extends BiomeProvider {
+    @Override
+    public Biome getBiome(WorldInfo worldInfo, int x, int y, int z) {
+        return Biome.LUSH_CAVES;
+    }
+
+    @Override
+    public List<Biome> getBiomes(WorldInfo worldInfo) {
+        return List.of(Biome.LUSH_CAVES);
+    }
+}
+```
+
+---
+
+### 🏔️ 第二步：噪音地形生成 (generateNoise)
+
+有了群系，接下来是**搭骨架**。这一步只负责确定哪些地方是实心的，哪些地方是空的。
+<info>注意：X 和 Z 是局部坐标 (0~15)，Y 是绝对坐标！</info>
+
+```java
+@Override
+public void generateNoise(
+    WorldInfo worldInfo, Random random,
+    int chunkX, int chunkZ, ChunkData chunkData
+) {
+    for (int x = 0; x < 16; ++x) {
+        for (int z = 0; z < 16; ++z) {
+            for (int y = chunkData.getMinHeight(); y < Math.min(60, chunkData.getMaxHeight()); ++y) {
+                chunkData.setBlock(x, y, z, Material.STONE);
+            }
+        }
+    }
+}
+```
+
+---
+
+### 🏜️ 第三步：地表覆盖 (generateSurface)
+
+骨架搭好了，全是灰扑扑的石头。现在我们要**上色**。
+这一步通常结合第一步的群系。
+
+```java
+@Override
+public void generateSurface(
+  WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData
+) {
+    // 我们在这个阶段寻找最顶层的石头，并把它替换成我们想要的表面
+    for (int x = 0; x < 16; x++) {
+        for (int z = 0; z < 16; z++) {
+            chunkData.setBlock(x, 60, z, Material.MAGMA_BLOCK);
+            chunkData.setBlock(x, 59, z, Material.NETHERRACK);
+        }
+    }
+}
+```
+
+---
+
+### 🪨 第四步与第五步：基岩与洞穴
+
+这两步分别处理世界的 **“托底”** 和 **“内部镂空”**。
+
+*(在现代开发中，如果我们不想自己写复杂的洞穴雕刻算法，可以直接 `return` 交给原版的生成器处理！)*
+
+```java
+@Override
+public void generateBedrock(
+  WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData
+) {
+    for (int x = 0; x < 16; x++) {
+        for (int z = 0; z < 16; z++) {
+            chunkData.setBlock(x, worldInfo.getMinHeight(), z, Material.BEDROCK);
+        }
+    }
+}
+```
+
+---
+
+### 🌲 第六步：自然装饰物 (BlockPopulators)
+
+整体框架完成了，剩下的任务就是点缀了。在 `getDefaultPopulators` 里返回各种装饰器，用来种树、撒矿石、长杂草。
+<danger>注意：Populator 阶段使用的是世界绝对坐标！</danger>
+
+```java
+public class OrePopulator extends BlockPopulator {
+    @Override
+    public void populate(
+        WorldInfo worldInfo, Random random, int chunkX, int chunkZ, LimitedRegion region
+    ) {
+        int worldX = (chunkX << 4) + random.nextInt(16);
+        int worldZ = (chunkZ << 4) + random.nextInt(16);
+        int y = 50;
+
+        if (region.getType(worldX, y, worldZ) == Material.STONE) {
+            region.setType(worldX, y, worldZ, Material.DIAMOND_ORE);
+        }
+    }
+}
+```
+
+---
+
+## 🏰 第七步：生成自定义建筑结构 (Structures)
+
+在游戏中用原版的“结构方块 (Structure Block)”保存一个 `.nbt` 建筑模型文件，然后在 Populator 阶段，使用 Bukkit 的 `StructureManager` 强行将这个建筑“粘贴”到世界上！
+
+```java
+@Override
+public void populate(
+    WorldInfo worldInfo, Random random, int chunkX, int chunkZ, LimitedRegion region
+) {
+    if (random.nextDouble() < 0.01) {
+        // 1. 加载我们在 resources 文件夹里放好的 nbt 结构文件
+        NamespacedKey key = new NamespacedKey(plugin, "player_house");
+        Structure structure = Bukkit.getStructureManager().getStructure(key);
+
+        // 2. 将建筑强行粘贴到指定坐标 (世界绝对坐标)
+        Location loc = new Location(null, chunkX << 4, 61, chunkZ << 4);
+        structure.place(region, loc, false, StructureRotation.NONE, Mirror.NONE, 0, 1.0f, random);
+    }
+}
+```
+
+---
+
+### 🏠 `.nbt` 文件到底放哪？
+
+如果采用“内部打包”的方案，我们不能直接使用 `getStructure(key)`（它默认去 world 文件夹里找）。我们需要用 Java 经典的 `InputStream`（输入流）技术，直接从插件的 `.jar` 压缩包内把文件“抽”出来：
+
+```java
+Structure myStructure;
+
+try {
+    InputStream stream = plugin.getResource("structures/player_house.nbt");
+    myStructure = Bukkit.getStructureManager().loadStructure(stream);
+
+} catch (Exception e) {
+    plugin.getLogger().severe("无法加载结构文件！");
 }
 ```
