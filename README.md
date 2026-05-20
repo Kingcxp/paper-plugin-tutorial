@@ -703,7 +703,7 @@ meta.addEnchant(Enchantment.SHARPNESS, 10, true);
 meta.addAttributeModifier(
     Attribute.ATTACK_DAMAGE,
     new AttributeModifier(
-        new NamespacedKey(TestPlugin.plugin, "shovel_attack_damage"),
+        new NamespacedKey("test_plugin", "shovel_attack_damage"),
         1024d, AttributeModifier.Operation.ADD_NUMBER,
         EquipmentSlotGroup.MAINHAND
     )
@@ -728,7 +728,7 @@ meta.addAttributeModifier(
 **解法**：Paper API 提供了 `PersistentDataContainer`，允许我们在物品内部**隐蔽地存储自定义数据**。
 
 ```java
-NamespacedKey key = new NamespacedKey(TestPlugin.plugin, "weapon_id");
+NamespacedKey key = new NamespacedKey("test_plugin", "weapon_id");
 meta.getPersistentDataContainer().set(
     key,
     PersistentDataType.STRING,
@@ -833,8 +833,8 @@ player.openInventory(gui);
 由于现在服务器里可能有几百个插件和数据包，如果大家都叫 `my_sword`，服务器就会崩溃。因此，`NamespacedKey` 是由 **“插件名(或命名空间)”** 和 **“配方名”** 两部分组成的。
 
 ```java
-// 生成一个当前插件专属的 Key： "testplugin:magic_saddle"
-NamespacedKey recipeKey = new NamespacedKey(plugin, "magic_saddle");
+// 生成一个当前插件专属的 Key： "test_plugin:magic_saddle"
+NamespacedKey recipeKey = new NamespacedKey("test_plugin", "magic_saddle");
 ```
 
 <info>如果有一天你需要取消这个合成配方，也是通过向服务器提供这个 Key 来进行注销（`Bukkit.removeRecipe(recipeKey)`）。</info>
@@ -844,7 +844,7 @@ NamespacedKey recipeKey = new NamespacedKey(plugin, "magic_saddle");
 ### 🧰 语法拆解：创建有序合成 (ShapedRecipe)
 
 ```java
-NamespacedKey key = new NamespacedKey(plugin, "custom_boots");
+NamespacedKey key = new NamespacedKey("test_plugin", "custom_boots");
 // 假定这个物品有一些特殊数据
 ItemStack result = new ItemStack(Material.IRON_BOOTS);
 ShapedRecipe recipe = new ShapedRecipe(key, result);
@@ -868,7 +868,7 @@ Bukkit.addRecipe(recipe);
 熔炉配方的注册更加简单直接。你只需要告诉服务器：输入什么、输出什么、给多少经验、需要烧多久？
 
 ```java
-NamespacedKey key = new NamespacedKey(plugin, "flesh_to_leather");
+NamespacedKey key = new NamespacedKey("test_plugin", "flesh_to_leather");
 
 FurnaceRecipe recipe = new FurnaceRecipe(
     key,
@@ -1258,7 +1258,7 @@ public void populate(
 ) {
     if (random.nextDouble() < 0.01) {
         // 1. 加载我们在 resources 文件夹里放好的 nbt 结构文件
-        NamespacedKey key = new NamespacedKey(plugin, "player_house");
+        NamespacedKey key = new NamespacedKey("test_plugin", "player_house");
         Structure structure = Bukkit.getStructureManager().getStructure(key);
 
         // 2. 将建筑强行粘贴到指定坐标 (世界绝对坐标)
@@ -1290,46 +1290,27 @@ try {
 
 <!-- _class: title-page -->
 
-# 🎨 突破次元壁：客户端视觉掌控
+# 🎨 客户端视觉掌控
 ### 动态材质包与字符串模型数据 (1.21.4+)
 
 ---
 
-## 🚧 自定义物品贴图
+### 🚧 自定义物品贴图
 
 <danger>无论你的 Java 代码写得多么逆天，纯粹的服务端插件是绝对不可能凭空把一张全新的 `.png` 物品贴图塞进玩家客户端内存里的！</danger>
 
 Minecraft 是 C/S（客户端/服务端）架构。服务器只能告诉客户端：“玩家手里拿的是一根木棍 (Stick)”。至于这根木棍长什么样，完全由客户端本地的文件决定。
 
 **✨ 破局之法：**
-让服务器向玩家发送一个 **资源包 (Resource Pack)** 的下载链接。客户端下载后，就会用包里的新图片来渲染游戏画面！
+让服务器向玩家发送一个 [资源包 (Resource Pack)](https://zh.minecraft.wiki/w/Tutorial:%E5%88%B6%E4%BD%9C%E8%B5%84%E6%BA%90%E5%8C%85) 的下载链接。客户端下载后，就会用包里的新图片来渲染游戏画面！
 
 ---
 
-## 🏷️ CustomModelData
-
-在 **Paper 1.21.4+** 引入了数据组件之后，我们终于可以在 `CustomModelData` 中使用**语义化的字符串**了！
-
-```java
-ItemStack magicWand = new ItemStack(Material.STICK);
-ItemMeta meta = magicWand.getItemMeta();
-meta.displayName(Component.text("★ 魔法法杖 ★"));
-
-CustomModelDataComponent cmd = meta.getCustomModelDataComponent();
-
-cmd.setStrings(List.of("test_plugin:magic_wand"));
-
-meta.setCustomModelDataComponent(cmd);
-magicWand.setItemMeta(meta);
-```
-
----
-
-## 📁 材质包基础：骨架与灵魂
+### 📁 材质包基础：骨架与灵魂
 
 材质包本质上是一个具有严格目录结构的 `.zip` 压缩包。
 首先，我们需要在根目录建立 `pack.mcmeta`（材质包的身份证）：
-下面这段 JSON 是万能的，可以适用于任何版本的材质包，但考虑到之后用到的语法比较新，Minecraft 版本最好还是在 `1.21.4+` 为好。
+下面这段 JSON 是通用的，可以适用于任何版本的材质包，但考虑到之后用到的语法比较新，Minecraft 版本最好还是在 `1.21.4+` 为好。
 
 ```json
 {
@@ -1343,3 +1324,105 @@ magicWand.setItemMeta(meta);
 }
 
 ```
+
+---
+
+## 🏷️ CustomModelData
+
+在 **Paper 1.21.4+** 引入了数据组件之后，我们终于可以在 `CustomModelData` 中使用**语义化的字符串**了！
+
+```java
+ItemStack magicWand = new ItemStack(Material.STICK);
+ItemMeta meta = magicWand.getItemMeta();
+meta.displayName(Component.text("★ 火花法杖 ★"));
+meta.setItemModel(new NamespacedKey("test_plugin", "flame_wand"))
+
+CustomModelDataComponent cmd = meta.getCustomModelDataComponent();
+
+cmd.setStrings(List.of("test_plugin:flame_wand"));
+
+meta.setCustomModelDataComponent(cmd);
+magicWand.setItemMeta(meta);
+```
+
+---
+
+### 📁 现代材质包：1.21.4+
+
+有了字符串暗号，我们要教客户端怎么认出它。一个现代的材质包 `.zip` 结构如下：
+
+```text
+my_resource_pack/
+├── assets
+│   └── test_plugin
+│       ├── items
+│       │   └── copper_sword.json
+│       ├── models
+│       │   ├── blade_1.json
+│       │   ├── hilt_1.json
+│       └── textures
+│           └── item
+│               ├── copper_blade.png
+│               └── copper_hilt.png
+└── pack.mcmeta
+```
+
+---
+
+### 📝 JSON：[物品模型映射](https://zh.minecraft.wiki/w/%E7%89%A9%E5%93%81%E6%A8%A1%E5%9E%8B%E6%98%A0%E5%B0%84)
+
+```json
+{
+    "model": {
+        "type": "composite",
+        "models": [
+            {
+                "type": "select",
+                "property": "custom_model_data",
+                "index": 0,
+                "fallback": {
+                    "type": "empty"
+                },
+                "cases": [
+                    {
+                        "when": "copper",
+                        "model": {
+                            "type": "model",
+                            "model": "test_plugin:hilt_1"
+                        }
+                    },
+                ]
+            },
+        ]
+    }
+}
+```
+
+---
+
+## 🌐 动态托管：插件内置 Web 服务器
+
+材质包做好了，怎么发给玩家？
+我们可以利用 Java 自带的 `HttpServer`，将资源包托管到某个端口：
+
+```java
+HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+
+server.createContext("/pack.zip", exchange -> {
+    byte[] packData = Files.readAllBytes(Paths.get("plugins/AwesomePlugin/pack.zip"));
+
+    exchange.sendResponseHeaders(200, packData.length);
+    exchange.getResponseBody().write(packData);
+    exchange.getResponseBody().close();
+});
+
+server.start();
+```
+之后通过 [Paper API](https://jd.papermc.io/paper/26.1.2/org/bukkit/entity/Player.html#addResourcePack(java.util.UUID,java.lang.String,byte[],java.lang.String,boolean)) 请求玩家下载资源包就可以了
+
+---
+
+<!-- _class: title-page -->
+
+### 感谢各位的聆听！
+#### By Kingcq
