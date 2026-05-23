@@ -1295,6 +1295,12 @@ try {
 
 <!-- _class: title-page -->
 
+# 示例：创建一个简单的平坦世界
+
+---
+
+<!-- _class: title-page -->
+
 # 🎨 客户端视觉掌控
 ### 动态材质包与字符串模型数据 (1.21.4+)
 
@@ -1424,6 +1430,12 @@ server.createContext("/pack.zip", exchange -> {
 server.start();
 ```
 之后通过 [Paper API](https://jd.papermc.io/paper/26.1.2/org/bukkit/entity/Player.html#addResourcePack(java.util.UUID,java.lang.String,byte[],java.lang.String,boolean)) 请求玩家下载资源包就可以了
+
+---
+
+<!-- _class: title-page -->
+
+# 示例：创建一个自定义剑模型映射
 
 ---
 
