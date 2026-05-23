@@ -709,7 +709,7 @@ public class MyCommand implements CommandExecutor, TabCompletor {
 
 ### 📜 Paper 的命令接口重写
 
-根据[文档](https://docs.papermc.io/paper/dev/command-api/misc/basic-command/)，在 Paper 中，我们可以继承 `SimpleCommand` 接口并重写对应方法：
+根据[文档](https://docs.papermc.io/paper/dev/command-api/misc/basic-command/)，在 Paper 中，我们可以继承 `BasicCommand` 接口并重写对应方法：
 
 ```java
 public class MyCommand implements BasicCommand
