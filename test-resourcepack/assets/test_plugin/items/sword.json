@@ -1,0 +1,69 @@
+{
+    "model": {
+        "type": "composite",
+        "models": [
+            {
+                "type": "select",
+                "property": "custom_model_data",
+                "index": 0,
+                "fallback": {
+                    "type": "empty"
+                },
+                "cases": [
+                    {
+                        "when": "copper",
+                        "model": {
+                            "type": "model",
+                            "model": "test_plugin:hilt_1"
+                        }
+                    },
+                    {
+                        "when": "diamond",
+                        "model": {
+                            "type": "model",
+                            "model": "test_plugin:hilt_2"
+                        }
+                    },
+                    {
+                        "when": "golden",
+                        "model": {
+                            "type": "model",
+                            "model": "test_plugin:hilt_3"
+                        }
+                    }
+                ]
+            },
+            {
+                "type": "select",
+                "property": "custom_model_data",
+                "index": 1,
+                "fallback": {
+                    "type": "empty"
+                },
+                "cases": [
+                    {
+                        "when": "copper",
+                        "model": {
+                            "type": "model",
+                            "model": "test_plugin:blade_1"
+                        }
+                    },
+                    {
+                        "when": "diamond",
+                        "model": {
+                            "type": "model",
+                            "model": "test_plugin:blade_2"
+                        }
+                    },
+                    {
+                        "when": "golden",
+                        "model": {
+                            "type": "model",
+                            "model": "test_plugin:blade_3"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
