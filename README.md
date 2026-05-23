@@ -351,6 +351,8 @@ public static void unregisterAll(Listener listener);
 public static void unregisterAll(Plugin plugin);
 ```
 
+直接使用 `HandlerList.unregisterAll` 就可以快速卸载事件响应器了
+
 ---
 
 <!-- _class: title-page -->
@@ -734,11 +736,11 @@ meta.addAttributeModifier(
 
 ```java
 NamespacedKey key = new NamespacedKey("test_plugin", "weapon_id");
-meta.getPersistentDataContainer().set(
+meta.editPersistentDataContainer(container -> container.set(
     key,
     PersistentDataType.STRING,
     "lightning_sword"
-);
+));
 // 在玩家攻击事件中
 String weaponId = meta
     .getPersistentDataContainer()
@@ -897,7 +899,7 @@ Bukkit.addRecipe(recipe);
 
 <!-- _class: title-page -->
 
-# <warning>Paper 插件开发</warning> - **自定义物品**
+# <warning>Paper 插件开发</warning> - **视觉 UI**
 
 ---
 
@@ -989,8 +991,6 @@ redTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
 // 当我们赋予玩家发光属性时，客户端渲染出来的轮廓线就会变成红色
 player.setGlowing(true);
 ```
-
-<!-- TODO: 进阶部分 -->
 
 ---
 
