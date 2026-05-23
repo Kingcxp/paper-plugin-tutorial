@@ -13,8 +13,8 @@ style: |
   section {
     position: relative;
     font-family: Bahnschrift;
-    padding-bottom: 64px !important;
-    padding-top: 64px !important;
+    padding-bottom: 32px !important;
+    padding-top: 32px !important;
   }
 
   section.title-page {
@@ -71,6 +71,10 @@ style: |
     color: #909399 !important;
   }
 
+  purple {
+    color: #9B4DE3 !important;
+  }
+
   code {
     background-color: #0A0A0A;
   }
@@ -95,6 +99,7 @@ style: |
 - **CraftBukkit**：第一个广泛使用的插件支持
 - <success>Spigot</success>：CraftBukkit 的一个分支，提供了更多的 API 和性能优化。
 - <danger>Paper</danger>：Spigot 的一个分支，在 API 支持和性能上更进一步。
+- <purple>PurPur???</purple>：Paper 的进一步包装，提供更**强劲**的性能。
 
 ---
 
