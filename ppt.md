@@ -985,7 +985,7 @@ food.setSaturation(100);
 meta.setFood(food);
 item.setData(
         DataComponentTypes.CONSUMABLE,
-        Consumable.consumable().consumeSeconds(1.6s).build()
+        Consumable.consumable().consumeSeconds(1.6f).build()
 );
 
 // 变成可堆叠的物品，最大堆叠只能 99
