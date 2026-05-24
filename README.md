@@ -919,7 +919,7 @@ Paper 借助 **Adventure API** 提供了极其优雅的原生 UI 控制：
 
 - **发送高频动作条 (ActionBar)：**
 ```java
-player.sendActionBar(Component.text("§b法力值: [||||||||  ] 80/100"));
+player.sendActionBar(Component.text("法力值: [||||||||  ] 80/100"));
 ```
 
 - **创建并展示 BossBar：**
