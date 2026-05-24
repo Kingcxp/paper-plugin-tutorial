@@ -982,8 +982,11 @@ FoodComponent food = meta.getFood();
 food.setCanAlwaysEat(true);
 food.setNutrition(100);
 food.setSaturation(100);
-
 meta.setFood(food);
+item.setData(
+        DataComponentTypes.CONSUMABLE,
+        Consumable.consumable().consumeSeconds(1.6s).build()
+);
 
 // 变成可堆叠的物品，最大堆叠只能 99
 meta.setMaxStackSize(64);
