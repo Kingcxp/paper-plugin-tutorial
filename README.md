@@ -1040,6 +1040,7 @@ WorldCreator creator = new WorldCreator("alien_dimension");
 
 creator.generator(new MyCustomGenerator());
 creator.generateStructures(false);
+creator.biomeProvider(new MyBiomeProvider());
 
 World alienWorld = Bukkit.createWorld(creator);
 ```
