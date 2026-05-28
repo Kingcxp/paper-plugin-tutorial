@@ -774,115 +774,6 @@ registerCommand(
 
 <!-- _class: title-page -->
 
-# <warning>Paper 插件开发</warning> - **配置文件的加载/保存**
-
----
-
-### 📚 Yaml
-
-`YAML` 是一种类似 `JSON` 的结构化数据格式，可以表示多层次多类型的复杂结构化数据：
-
-```yaml
-players:
-  -
-    name: "kingcq"
-    age: 22
-    tags: ["student", "developer"]
-    op: true
-  -
-    name: "stridebeach",
-    age: 21
-    tags: ["strange", "hyw"]
-    op: false
-```
-
----
-
-### 📃 配置文件
-
-Paper 服务器插件的配置文件就推荐使用 `YAML` 格式编写，并提供了丰富的[语法支持](https://jd.papermc.io/paper/26.1.2/org/bukkit/configuration/file/YamlConfiguration.html)：
-
-```java
-@Override
-public void onEnable() {
-    File file = new File(getDataFolder(), "myconfig.yml");
-    YamlConfiguration myconfig = YamlConfiguration.loadConfiguration(file);
-}
-```
-
-而想要获取到配置文件中的内容，比如说我要获得 `players` 中第一个人的 `name`，只需要：
-
-```java
-String name = myconfig.getString("players.0.name");
-```
-
----
-
-### 📃 配置文件的读取
-
-`YamlConfiguration` 提供了[充足的接口](https://jd.papermc.io/paper/26.1.2/org/bukkit/configuration/MemorySection.html)用来获取配置文件中的数据。
-
-而对于其中的 `path` 参数，想必你也能猜到，它实际上是一个 `String` 类型的路径，用来指定配置文件中的具体位置：
-
-```java
-String name = myconfig.getString("players.0.name");
-String age = myconfig.getString("players.0.age");
-List<String> tags = myconfig.getStringList("players.0.tags");
-boolean op = myconfig.getBoolean("players.0.op");
-```
-
-特别地，你可以使用 `getConfigSection()` 来继续拆分 `YAML` 文件：
-
-```java
-ConfigurationSection section = myconfig.getConfigurationSection("players.0");
-section.getString("name");
-```
-
----
-
-### 📃 配置文件的保存
-
-`YamlConfiguration` 提供了 `save()` 方法来保存配置文件：
-
-```java
-myconfig.save(new File(getDataFolder(), "myconfig.yml"));
-```
-
-那对于其中具体的数据，如何修改呢？
-
-YamlConfiguration 提供了 `set()` 方法，可以将指定的 `path` 字段的内容修改为任何支持的类型：
-
-```java
-myconfig.set("players.0.name", "aintcecily");
-myconfig.set("players.1.age", -1);
-```
-
-特别地，如果后面要设置的值为 `null`，这条字段会直接被删除。
-
----
-
-### ⚠️ 性能陷阱：主线程与磁盘 I/O
-
-你应当也注意到了，读写配置文件一定是对**整个文件**进行操作，在配置文件比较大的情况下，这意味着<danger>大量的磁盘读写开销</danger>。
-
-因此，为了尽可能避免大量的开销，我们最好只在 `onEnable` 和 `onDisable` 生命周期中读取和保存配置文件。
-
-当然，你也可以选择 `懒加载` 的思路，当需要配置文件的时候再去加载，但 <warning>在整个插件生命周期中只加载一次</warning>。
-
-> 担心服务器被强制 kill 了，配置文件没来得及保存？
-
-~~*除了定时保存配置文件以外，这种情况确实没招，受着*~~
-
----
-
-<!-- _class: title-page -->
-
-## 示例：支持在配置文件中调整上升速度和时长
-
----
-
-<!-- _class: title-page -->
-
 # <warning>Paper 插件开发</warning> - **物品和容器**
 
 ---
@@ -1214,6 +1105,121 @@ redTeam.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
 // 当我们赋予玩家发光属性时，客户端渲染出来的轮廓线就会变成红色
 player.setGlowing(true);
 ```
+
+---
+
+<!-- _class: title-page -->
+
+## 示例：试一下刚才提到的一些功能？
+
+---
+
+<!-- _class: title-page -->
+
+# <warning>Paper 插件开发</warning> - **配置文件的加载/保存**
+
+---
+
+### 📚 Yaml
+
+`YAML` 是一种类似 `JSON` 的结构化数据格式，可以表示多层次多类型的复杂结构化数据：
+
+```yaml
+players:
+  -
+    name: "kingcq"
+    age: 22
+    tags: ["student", "developer"]
+    op: true
+  -
+    name: "stridebeach",
+    age: 21
+    tags: ["strange", "hyw"]
+    op: false
+```
+
+---
+
+### 📃 配置文件
+
+Paper 服务器插件的配置文件就推荐使用 `YAML` 格式编写，并提供了丰富的[语法支持](https://jd.papermc.io/paper/26.1.2/org/bukkit/configuration/file/YamlConfiguration.html)：
+
+```java
+@Override
+public void onEnable() {
+    File file = new File(getDataFolder(), "myconfig.yml");
+    YamlConfiguration myconfig = YamlConfiguration.loadConfiguration(file);
+}
+```
+
+而想要获取到配置文件中的内容，比如说我要获得 `players` 中第一个人的 `name`，只需要：
+
+```java
+String name = myconfig.getString("players.0.name");
+```
+
+---
+
+### 📃 配置文件的读取
+
+`YamlConfiguration` 提供了[充足的接口](https://jd.papermc.io/paper/26.1.2/org/bukkit/configuration/MemorySection.html)用来获取配置文件中的数据。
+
+而对于其中的 `path` 参数，想必你也能猜到，它实际上是一个 `String` 类型的路径，用来指定配置文件中的具体位置：
+
+```java
+String name = myconfig.getString("players.0.name");
+String age = myconfig.getString("players.0.age");
+List<String> tags = myconfig.getStringList("players.0.tags");
+boolean op = myconfig.getBoolean("players.0.op");
+```
+
+特别地，你可以使用 `getConfigSection()` 来继续拆分 `YAML` 文件：
+
+```java
+ConfigurationSection section = myconfig.getConfigurationSection("players.0");
+section.getString("name");
+```
+
+---
+
+### 📃 配置文件的保存
+
+`YamlConfiguration` 提供了 `save()` 方法来保存配置文件：
+
+```java
+myconfig.save(new File(getDataFolder(), "myconfig.yml"));
+```
+
+那对于其中具体的数据，如何修改呢？
+
+YamlConfiguration 提供了 `set()` 方法，可以将指定的 `path` 字段的内容修改为任何支持的类型：
+
+```java
+myconfig.set("players.0.name", "aintcecily");
+myconfig.set("players.1.age", -1);
+```
+
+特别地，如果后面要设置的值为 `null`，这条字段会直接被删除。
+
+---
+
+### ⚠️ 性能陷阱：主线程与磁盘 I/O
+
+你应当也注意到了，读写配置文件一定是对**整个文件**进行操作，在配置文件比较大的情况下，这意味着<danger>大量的磁盘读写开销</danger>。
+
+因此，为了尽可能避免大量的开销，我们最好只在 `onEnable` 和 `onDisable` 生命周期中读取和保存配置文件。
+
+当然，你也可以选择 `懒加载` 的思路，当需要配置文件的时候再去加载，但 <warning>在整个插件生命周期中只加载一次</warning>。
+
+> 担心服务器被强制 kill 了，配置文件没来得及保存？
+
+~~*除了定时保存配置文件以外，这种情况确实没招，受着*~~
+
+---
+
+<!-- _class: title-page -->
+
+## 示例：支持在配置文件中调整上升速度和时长
 
 ---
 
