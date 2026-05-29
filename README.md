@@ -319,6 +319,28 @@ public final class TestPlugin extends JavaPlugin {
 
 ---
 
+### ⛔ 改变命运：取消事件 (Event Cancellation)
+
+很多时候，我们监听事件是为了**阻止**某件事情的发生。
+我们在事件发生前**取消**它，服务器就会当作无事发生：
+
+```java
+@EventHandler
+public void onBlockBreak(BlockBreakEvent event) {
+    Player player = event.getPlayer();
+
+    // 假设：如果玩家不在创造模式，就绝对不允许破坏方块
+    if (player.getGameMode() != GameMode.CREATIVE) {
+        event.setCancelled(true);
+        player.sendRichMessage("<red>抱歉，这是保护区！</red>");
+    }
+}
+```
+
+<success>💡 提示：善用事件取消，你可以轻松实现领地保护、禁止 PvP、禁止吃某种食物等功能，而不需要自己去编写复杂的“复原逻辑”。</success>
+
+---
+
 <!-- _class: title-page -->
 
 ### 示例：玩家手持史莱姆块时被攻击免伤并弹飞攻击者
@@ -423,6 +445,50 @@ task.runTaskTimer(Plugin plugin, long delay, long period);
 - `runTaskTimer`: 指定的 delay 后开始运行，然后每隔 period 运行一次
 
 <warning>如果中途遇到了需要紧急停止的情况，也可以在 `run` 方法中使用 `cancel` 直接取消定时任务</warning>
+
+---
+
+### 🧵 性能红线：主线程与异步任务 (Async Tasks)
+
+在 `BukkitRunnable` 中，除了 `runTask`，你可能还会注意到 `runTaskAsynchronously`。为什么要区分异步？
+
+Minecraft 的所有游戏逻辑（实体移动、方块更新、事件触发）都在**一条主线程 (Main Thread)** 上运行（至少在 <success>paper</success> 中是这样的）。
+如果在这个 <danger>50ms (1 Tick)</danger> 窗口内，你执行了以下操作：
+- 🌐 发起 HTTP 网络请求下载文件
+- 💾 疯狂读写本地大文件
+- 🗄️ 连接 MySQL 数据库进行复杂查询
+
+<danger>主线程会被彻底堵死！TPS 瞬间暴跌！</danger>
+
+---
+
+### 🔄 异步与主线程
+
+因此，任何耗时操作必须交给**异步线程**：
+<warning>⚠️ 永远、绝对不要在异步线程中修改 Bukkit 的 API 对象（方块、实体、容器等），否则会引发底层并发修改异常而崩溃！</warning>
+
+---
+
+我们需要采用 **“异步获取数据 ➔ 切回主线程修改世界”** 的顺序：
+
+```java
+new BukkitRunnable() {
+    @Override
+    public void run() {
+        // 1. [异步线程] 执行耗时操作：去数据库查询玩家的超长信息
+        String data = fetchPlayerDataFromDatabase(player.getUniqueId());
+
+        // 2. 耗时操作完成！[切回主线程] 去更新游戏世界
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                player.sendRichMessage("<green>数据加载成功：" + data);
+                player.getInventory().addItem(new ItemStack(Material.DIAMOND));
+            }
+        }.runTask(plugin); // 注意！这里用的是 runTask，回到了主线程
+    }
+}.runTaskAsynchronously(plugin);
+```
 
 ---
 
@@ -543,7 +609,9 @@ public @Nullable String permission() { ... }
 ```java
 registerCommand(
     "quickcmd",
-    (source, args) -> source.getSender().sendRichMessage("<yellow>Hello!")
+    (source, args) -> {
+        source.getSender().sendRichMessage("<yellow>Hello!");
+    }
 );
 ```
 
