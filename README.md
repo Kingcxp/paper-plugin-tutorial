@@ -363,6 +363,12 @@ public static void unregisterAll(Plugin plugin);
 
 <!-- _class: title-page -->
 
+# 中场休息
+
+---
+
+<!-- _class: title-page -->
+
 # <warning>Paper 插件开发</warning> - **BukkitRunnable**
 
 ---
@@ -547,7 +553,7 @@ registerCommand(
 
 <!-- _class: title-page -->
 
-## 示例：使用 /rocket 命令也能触发烈焰棒效果
+### 示例：使用 /rocket 命令也能触发烈焰棒效果
 
 ---
 
@@ -667,7 +673,7 @@ meta.setMaxStackSize(64);
 
 <!-- _class: title-page -->
 
-## 示例：用水瓶创建一个能喝 5 次的治疗药水
+### 示例：用水瓶创建一个能喝 5 次的治疗药水
 
 ---
 
@@ -705,7 +711,7 @@ player.openInventory(gui);
 
 <!-- _class: title-page -->
 
-## 示例：简单的响应式界面
+### 示例：简单的响应式界面
 
 ---
 
@@ -786,7 +792,47 @@ Bukkit.addRecipe(recipe);
 
 <!-- _class: title-page -->
 
-## 示例：实现“腐肉烧皮革”功能
+### 示例：实现“腐肉烧皮革”功能
+
+---
+
+<!-- _class: title-page -->
+
+# ⏸️ 阶段总结与下期预告
+
+---
+
+### 📚 Part 1 知识点回顾
+
+在今天的讲座中，我们成功让代码接入了 Minecraft 世界：
+
+- ⚙️ **服务端架构**：理解了 Paper 的优势、Tick 机制与世界脉搏。
+- 🔌 **插件基石**：掌握了生命周期 (`onEnable`/`onDisable`)。
+- ⚡ **事件与调度**：学会了监听万物 (`@EventHandler`)，以及用 `BukkitRunnable` 掌控时间。
+- 🪣 **行为注入**：利用 Paper 最新的 `BasicCommand` 快速编写了自定义命令。
+- 📦 **物质与规则**：重塑了 `ItemStack`，利用 `ItemMeta` 注入灵魂，搭建了虚拟 GUI 菜单，并篡改了世界的合成法则。
+
+<success>现在，你已经具备了开发中小型 RPG 或生存玩法插件的核心能力！</success>
+
+---
+
+### 🚀 Part 2 下期高能预告
+
+在下一期讲座中，我们将向**更底层的机制**和**更炫酷的视觉体验**进发：
+
+- 🖥️ **现代视觉 UI**：摆脱枯燥的聊天框！掌控 ActionBar、BossBar、发光描边与计分板。
+- 💾 **数据持久化**：使用 YAML 配置文件，让你的插件参数可配置、数据不丢失。
+- 🗺️ **造物主特权 (硬核)**：拆解 Minecraft 世界生成管线，用代码凭空捏造一个全新的维度世界！
+- 🎨 **突破次元壁 (1.21.4+)**：利用材质包，通过 `CustomModelData` 让纯服务端插件也能展示自定义 3D 模型！
+
+**我们下期再见！**
+
+---
+
+<!-- _class: title-page -->
+
+### 感谢各位的聆听！
+#### By Kingcq
 
 ---
 
@@ -889,7 +935,7 @@ player.setGlowing(true);
 
 <!-- _class: title-page -->
 
-## 示例：试一下刚才提到的一些功能？
+### 示例：试一下刚才提到的一些功能？
 
 ---
 
@@ -998,7 +1044,13 @@ myconfig.set("players.1.age", -1);
 
 <!-- _class: title-page -->
 
-## 示例：支持在配置文件中调整上升速度和时长
+### 示例：支持在配置文件中调整上升速度和时长
+
+---
+
+<!-- _class: title-page -->
+
+# 中场休息
 
 ---
 
