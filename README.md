@@ -51,6 +51,10 @@ style: |
     max-width: 100%;
   }
 
+  .whole-page {
+    max-height: 75vh!important;
+  }
+
   strong {
     color: #409EFF !important;
   }
@@ -385,12 +389,6 @@ public static void unregisterAll(Plugin plugin);
 
 <!-- _class: title-page -->
 
-# 中场休息
-
----
-
-<!-- _class: title-page -->
-
 # <warning>Paper 插件开发</warning> - **BukkitRunnable**
 
 ---
@@ -495,6 +493,12 @@ new BukkitRunnable() {
 <!-- _class: title-page -->
 
 ### 示例：右键使用烈焰棒，玩家会在5秒内持续向上冲刺
+
+---
+
+<!-- _class: title-page -->
+
+# 中场休息
 
 ---
 
@@ -829,7 +833,7 @@ recipe.shape(
     "I I"
 );
 
-recipe.setIngredient('L', Material.FEATHER);
+recipe.setIngredient('F', Material.FEATHER);
 recipe.setIngredient('I', Material.IRON_INGOT);
 
 Bukkit.addRecipe(recipe);
@@ -901,6 +905,14 @@ Bukkit.addRecipe(recipe);
 
 ### 感谢各位的聆听！
 #### By Kingcq
+
+---
+
+<!-- _class: title-page -->
+
+<img class="whole-page" src="./assets/nmo_qrcode.jpg" />
+
+![alt text](./assets/me.png)
 
 ---
 

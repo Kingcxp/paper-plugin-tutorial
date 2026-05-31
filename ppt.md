@@ -51,6 +51,10 @@ style: |
     max-width: 100%;
   }
 
+  .whole-page {
+    max-height: 75vh!important;
+  }
+
   strong {
     color: #409EFF !important;
   }
@@ -606,13 +610,15 @@ public static void unregisterAll(Plugin plugin);
 
 <!-- _class: title-page -->
 
-# 中场休息
+# <warning>Paper 插件开发</warning> - **BukkitRunnable**
 
 ---
 
-<!-- _class: title-page -->
+### 🚀 持续生效的效果
 
-# <warning>Paper 插件开发</warning> - **BukkitRunnable**
+在插件开发中，我们经常需要实现一些**持续生效**的效果，比如<warning>坐上火箭，在一段时间内持续向上飞行</warning>
+
+这种长时间的效果显然超出了一个 tick 可以完成的限度，而直接在事件响应中进行阻塞式的行为会直接导致 TPS 爆炸。
 
 ---
 
@@ -716,6 +722,12 @@ new BukkitRunnable() {
 <!-- _class: title-page -->
 
 ### 示例：右键使用烈焰棒，玩家会在5秒内持续向上冲刺
+
+---
+
+<!-- _class: title-page -->
+
+# 中场休息
 
 ---
 
@@ -1050,7 +1062,7 @@ recipe.shape(
     "I I"
 );
 
-recipe.setIngredient('L', Material.FEATHER);
+recipe.setIngredient('F', Material.FEATHER);
 recipe.setIngredient('I', Material.IRON_INGOT);
 
 Bukkit.addRecipe(recipe);
@@ -1122,6 +1134,14 @@ Bukkit.addRecipe(recipe);
 
 ### 感谢各位的聆听！
 #### By Kingcq
+
+---
+
+<!-- _class: title-page -->
+
+<img class="whole-page" src="./assets/nmo_qrcode.jpg" />
+
+![alt text](./assets/me.png)
 
 ---
 
