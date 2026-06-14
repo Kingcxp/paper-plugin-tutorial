@@ -1191,9 +1191,9 @@ Scoreboard 是 Minecraft 中最强大的数据与团队管理系统。它的首�
 ScoreboardManager manager = Bukkit.getScoreboardManager();
 Scoreboard board = manager.getNewScoreboard();
 Objective obj = board.registerNewObjective(
-    "game_stats",
-    "dummy",
-    Component.text("★ 战区数据 ★")
+        "game_stats",
+        Criteria.DUMMY,
+        Component.text("★ 战区数据 ★")
 );
 obj.setDisplaySlot(DisplaySlot.SIDEBAR); // 显示在屏幕右侧
 obj.getScore("当前击杀:").setScore(5);
